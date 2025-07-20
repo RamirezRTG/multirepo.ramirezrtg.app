@@ -13,3 +13,4 @@ packages
 repos.yaml
 scripts/custom/*
 multirepo.lock
+package-lock.json
