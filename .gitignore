@@ -1,0 +1,15 @@
+### IDE & Editor ###
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+### Folders ###
+node_modules
+packages
+
+### Configuration Files ###
+repos.yaml
+scripts/custom/*
+multirepo.lock

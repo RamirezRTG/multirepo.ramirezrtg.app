@@ -1,0 +1,6 @@
+hasCheckFunction:
+  preClone: false
+  postClone: false
+traits:
+  - php
+  - composer

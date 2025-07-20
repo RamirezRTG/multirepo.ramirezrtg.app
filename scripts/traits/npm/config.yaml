@@ -1,0 +1,3 @@
+hasCheckFunction:
+  preClone: true
+  postClone: true

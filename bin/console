@@ -1,0 +1,191 @@
+#!/usr/bin/env node
+
+/**
+ * Multirepo Console Command
+ *
+ * This is the main entry point for the multirepo command-line interface.
+ * It provides a clean command structure and proper argument parsing.
+ */
+
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import { pathToFileURL } from 'url';
+
+// Get the directory of this bin file
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const scriptsDir = join(__dirname, '..', 'scripts');
+
+/**
+ * Display help information
+ */
+function showHelp() {
+    console.log(`
+multirepo Setup Tool
+
+Usage: multirepo <command> [options]
+
+Commands:
+  setup              Set up repositories from repos.yaml
+
+Basic Options:
+  --verbose, -v      Enable verbose logging
+  --dry-run, -d      Show what would be done without making changes
+  --help, -h         Show this help message
+
+Cache Options:
+  --force-preclone   Skip preClone cache and re-run all preClone hooks
+  --force-postclone  Skip postClone cache and re-run all postClone hooks
+  --force-all        Skip all cache and re-run everything
+  --skip-cache       Ignore lock file completely (don't read or write)
+  --update-lock      Update lock file without skipping operations
+  --clear-lock       Delete existing lock file and start fresh
+
+Examples:
+  multirepo setup                    # Interactive repository setup with caching
+  multirepo setup --verbose         # Setup with detailed logging
+  multirepo setup --dry-run         # Preview what would happen
+  multirepo setup --force-all       # Force complete refresh
+  multirepo setup --force-postclone # Skip only postClone cache
+  multirepo setup --skip-cache      # Run without any caching
+  multirepo setup --clear-lock      # Start fresh with no cache
+
+Cache Behavior:
+  By default, the setup tool uses intelligent caching to skip unnecessary operations.
+  Operations are skipped when:
+  - Repository content hasn't changed (checksum comparison)
+  - Trait scripts haven't been modified
+  - Configuration files haven't changed
+  - Previous runs completed successfully
+
+  Use cache options to override this behavior when needed.
+`);
+}
+
+/**
+ * Parse command line arguments into a clean structure
+ */
+function parseArgs(args) {
+    const parsed = {
+        command: null,
+        flags: []
+    };
+
+    for (let i = 0; i < args.length; i++) {
+        const arg = args[i];
+
+        if (!arg.startsWith('-')) {
+            // First non-flag argument is the command
+            if (!parsed.command) {
+                parsed.command = arg;
+            }
+        } else {
+            // Handle flags
+            switch (arg) {
+                case '--verbose':
+                case '-v':
+                    parsed.flags.push('--verbose');
+                    break;
+                case '--dry-run':
+                case '-d':
+                    parsed.flags.push('--dry-run');
+                    break;
+                case '--help':
+                case '-h':
+                    showHelp();
+                    process.exit(0);
+                    break;
+                // New cache-related flags
+                case '--force-preclone':
+                    parsed.flags.push('--force-preclone');
+                    break;
+                case '--force-postclone':
+                    parsed.flags.push('--force-postclone');
+                    break;
+                case '--force-all':
+                    parsed.flags.push('--force-all');
+                    break;
+                case '--skip-cache':
+                    parsed.flags.push('--skip-cache');
+                    break;
+                case '--update-lock':
+                    parsed.flags.push('--update-lock');
+                    break;
+                case '--clear-lock':
+                    parsed.flags.push('--clear-lock');
+                    break;
+                default:
+                    console.error(`Unknown option: ${arg}`);
+                    showHelp();
+                    process.exit(1);
+            }
+        }
+    }
+
+    return parsed;
+}
+
+/**
+ * Execute the setup command
+ */
+async function executeSetup(flags) {
+    const setupScriptPath = join(scriptsDir, 'setup.js');
+
+    try {
+        // Dynamically import and execute the setup script
+        // We need to manipulate process.argv to pass the flags correctly
+        const originalArgv = process.argv.slice();
+
+        // Set up argv as if setup.js was called directly with flags
+        process.argv = ['node', setupScriptPath, ...flags];
+
+        // Convert the file path to a proper file URL for Windows compatibility
+        const setupScriptURL = pathToFileURL(setupScriptPath).href;
+
+        // Import and execute the setup script
+        await import(setupScriptURL);
+
+        // Restore original argv (though script will likely exit before this)
+        process.argv = originalArgv;
+
+    } catch (error) {
+        console.error('Failed to execute setup:', error.message);
+        process.exit(1);
+    }
+}
+
+/**
+ * Main entry point
+ */
+async function main() {
+    const args = process.argv.slice(2);
+
+    // Show help if no arguments provided
+    if (args.length === 0) {
+        showHelp();
+        return;
+    }
+
+    const parsed = parseArgs(args);
+
+    // Execute the appropriate command
+    switch (parsed.command) {
+        case 'setup':
+            await executeSetup(parsed.flags);
+            break;
+        case null:
+            console.error('No command specified.');
+            showHelp();
+            process.exit(1);
+            break;
+        default:
+            console.error(`Unknown command: ${parsed.command}`);
+            showHelp();
+            process.exit(1);
+    }
+}
+
+// Execute main function
+main().catch(error => {
+    console.error('Unexpected error:', error);
+    process.exit(1);
+});
