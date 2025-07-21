@@ -1,253 +1,299 @@
-# Multirepo Setup Guide
+# Multirepo Setup Tool
 
-This document outlines how to use the interactive setup script to clone and configure the necessary repositories for
-this multirepo management system.
+**Interactive Multi-Repository Management with Intelligent Caching**
+
+A CLI tool that streamlines the setup and management of multiple repositories through intelligent caching, trait-based automation, and comprehensive validation.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+---
+
+## Key Features
+
+### Intelligent Caching System
+- **Smart change detection** through SHA256-based checksums
+- **Automatic cache invalidation** when dependencies, scripts, or configurations change
+- **Significant performance improvements** on subsequent runs
+- **Team-shareable cache state** via lock file
+
+### Interactive Repository Management
+- Multi-select interface for choosing repositories to process
+- Existing project detection with smart handling options
+- Empty folder support for new project scaffolding
+- Conflict resolution for existing directories
+
+### Trait-Based Automation
+- Reusable validation scripts for common project types (npm, PHP, React, Symfony, etc.)
+- Hierarchical trait dependencies with automatic resolution
+- Mixed execution modes (check functions vs traditional scripts)
+- Custom hook support for repository-specific logic
+
+### Comprehensive Reporting
+- Real-time progress tracking with grouped, colored output
+- Cache efficiency statistics showing operation optimization
+- Detailed validation results with actionable suggestions
+- Error handling with graceful degradation
+
+### Performance & Reliability
+- Three-phase execution model ensuring consistency
+- Async/await throughout for non-blocking operations
+- Robust error handling with automatic recovery
+- Dry-run support for safe previewing
 
 ---
 
 ## Quick Start
 
-1. Ensure you have `git` and the correct version of `node` installed (as defined in `.nvmrc`).
-2. Run the setup command from the multirepo root:
-```shell script
+### Prerequisites
+- Node.js 16+ and npm
+- Git installed and configured
+- Access to your repositories
+
+### Installation & First Run
+
+```bash
+# Clone or download the multirepo tool
+git clone https://github.com/your-org/multirepo-setup.git
+cd multirepo-setup
+
+# Install dependencies
+npm install
+
+# Run the interactive setup
 ./bin/console setup
+
+# Or with detailed logging
+./bin/console setup --verbose
 ```
 
-3. Follow the interactive prompts to select which repositories you want to clone.
+### What Happens Next
+1. Interactive repository selection from your `repos.yaml`
+2. Environment validation with intelligent caching
+3. Automated cloning or project detection
+4. Trait-based setup and validation
+5. Comprehensive success reporting
+
+**First run**: Full setup with cache creation  
+**Subsequent runs**: Optimized execution with intelligent caching
 
 ---
 
 ## Command Line Interface
 
-The multirepo tool provides a clean CLI interface for managing your repositories:
-
 ### Basic Usage
-```shell script
+```bash
 multirepo <command> [options]
 ```
 
-### Available Commands
-- `setup` - Set up repositories from repos.yaml
+### Core Commands
+- `setup` - Interactive repository setup with intelligent caching
 
-### Options
-- `--verbose, -v` - Enable verbose logging
-- `--dry-run, -d` - Show what would be done without making changes
-- `--help, -h` - Show help message
+### Options Overview
 
-### Examples
-```shell script
-# Interactive repository setup
-multirepo setup
-
-# Setup with detailed logging
-multirepo setup --verbose
-
-# Preview what would happen
-multirepo setup --dry-run
-
-# Detailed dry-run preview
-multirepo setup --dry-run --verbose
+#### Basic Controls
+```bash
+--verbose, -v      # Detailed logging and progress information
+--dry-run, -d      # Preview actions without making changes
+--help, -h         # Show comprehensive help
 ```
 
-### Local Development Usage
-If you haven't installed the tool globally, you can run it locally:
-```shell script
-# Direct execution
-./bin/console setup
+#### Cache Management
+```bash
+--force-all        # Skip all cache, run everything fresh
+--force-preclone   # Re-run environment validation only
+--force-postclone  # Re-run project setup only
+--skip-cache       # Ignore cache system entirely
+--clear-lock       # Delete cache and start fresh
+--update-lock      # Update cache without skipping operations
+```
 
-# Using npx
-npx multirepo setup
+### Common Usage Examples
+
+```bash
+# Standard workflow - fast with caching
+multirepo setup
+
+# Debugging or troubleshooting
+multirepo setup --verbose --dry-run
+
+# After system updates
+multirepo setup --force-preclone
+
+# After dependency changes
+multirepo setup --force-postclone
+
+# Complete refresh
+multirepo setup --force-all
+
+# Team sync - update shared cache
+multirepo setup --update-lock
+```
+
+---
+
+## Intelligent Caching System
+
+### How Smart Caching Works
+
+The tool creates a `multirepo.lock` file tracking:
+
+| What's Tracked | When Cache Invalidates | Benefit |
+|----------------|----------------------|---------|
+| **Repository content** | Any file changes in repos | Skip unchanged project setup |
+| **Trait scripts** | Script or config modifications | Skip environment checks |
+| **Dependencies** | package.json, composer.json changes | Skip installation steps |
+| **Global config** | repos.yaml modifications | Skip validation steps |
+
+### Cache Control Strategies
+
+**Team Development:**
+```bash
+# Commit multirepo.lock for shared cache state
+git add multirepo.lock
+git commit -m "Update multirepo cache"
+```
+
+**Individual Development:**
+```bash
+# Add to .gitignore for personal caching
+echo "multirepo.lock" >> .gitignore
+```
+
+**Troubleshooting:**
+```bash
+# Nuclear option - fresh start
+multirepo setup --clear-lock --force-all
 ```
 
 ---
 
 ## Configuration: `repos.yaml`
 
-The setup script is controlled by the `repos.yaml` file in the root of the multirepo. This file defines all the available
-sub-projects that can be cloned.
-
-### Structure
-
-The file uses a key-value map under the `repos` key. The key for each entry is the repository's short name, which will
-also be used as the folder name inside the `packages/` directory.
+Define your repository ecosystem in a declarative format:
 
 ```yaml
 repos:
-  # The key is the repo identifier (e.g., 'react-app')
-  react-app:
-  # ... configuration for this repo
-  symfony-app:
-  # ... configuration for this repo
+  # Frontend applications
+  react-dashboard:
+    url: https://github.com/company/react-dashboard.git
+    traits: ['npm', 'react', 'typescript']
+
+  vue-storefront:
+    url: https://github.com/company/vue-storefront.git
+    traits: ['npm', 'vue']
+
+  # Backend services
+  api-gateway:
+    url: https://github.com/company/api-gateway.git
+    traits: ['php', 'composer', 'symfony']
+    postClone: 'composer install --no-dev'
+
+  user-service:
+    url: https://github.com/company/user-service.git
+    traits: ['npm', 'node', 'typescript']
+    postClone: 'setup-database.js'
+
+  # Development tools
+  shared-configs:
+    url: https://github.com/company/configs.git
+    traits: ['tools']
+
+  # Local development
+  local-proxy:
+    # No URL = creates empty folder for local development
+    traits: ['nginx']
 ```
 
-### Repository Options
+### Repository Configuration Options
 
-Each repository entry can have the following properties:
-
-| Key       | Type                 | Required? | Description                                                                                                                              |
-|-----------|----------------------|-----------|------------------------------------------------------------------------------------------------------------------------------------------|
-| `url`     | `string`             | **Yes**   | The full Git URL (HTTPS or SSH) of the repository to clone. If omitted, the script will offer to create an empty folder instead.       |
-| `traits`  | `string` or `array`  | No        | Assigns one or more "traits" to the repository. The script will run hook files from `scripts/traits/<trait-name>/` for each trait.     |
-| `preClone`| `string`             | No        | A command or a path to a custom Node.js script (ending in `.js`) to run **before** cloning. Useful for environment checks.             |
-| `postClone`| `string`            | No        | A command or a path to a custom Node.js script (ending in `.js`) to run **after** cloning. Useful for installing dependencies.         |
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `url` | `string` | **Yes*** | Git repository URL (HTTPS/SSH). *Omit to create empty folder |
+| `traits` | `string[]` | No | Automation traits to apply (npm, php, react, etc.) |
+| `preClone` | `string` | No | Command or script to run before cloning |
+| `postClone` | `string` | No | Command or script to run after cloning |
 
 ---
 
-## Hooks and Custom Scripts
 
-The setup script provides a powerful hook system to automate tasks before and after cloning repositories.
+## Trait-Based Automation System
 
-### Trait-Based Hooks
+### Built-in Traits
 
-For common project types, you can create reusable scripts that run for any repository with a specific `trait`. These
-scripts live in the `scripts/traits/` directory structure.
+Transform repetitive setup tasks into reusable automation:
 
-**Example:**
-If a repo has `traits: symfony`, the setup script will automatically look for and execute:
+**Language & Runtime**
+- `npm` - Node.js package management
+- `php` - PHP environment validation
 
-- `scripts/traits/symfony/preClone.js` (before cloning)
-- `scripts/traits/symfony/postClone.js` (after cloning)
+**Frameworks & Tools**
+- `react` - React application setup
+- `vue` - Vue.js project validation
+- `symfony` - Symfony framework setup
+- `composer` - PHP Composer dependency management
+- `typescript` - TypeScript configuration
 
-#### Trait Configuration
+**Development Tools**
+- `jest` - JavaScript testing framework
+- `eslint` - JavaScript linting
+- `prettier` - Code formatting
+- `vite` - Modern build tool
+- `webpack` - Module bundler
+- `nextjs` - Next.js framework
+- `express` - Express.js server framework
 
-Each trait uses a consolidated `config.yaml` file to define its behavior and dependencies:
+### Creating Custom Traits
 
-**Example:** `scripts/traits/composer/config.yaml`
-```yaml
-hasCheckFunction:
-  preClone: true
-  postClone: true
-traits:
-  - php
+**1. Create trait structure:**
+```bash
+scripts/traits/my-trait/
+├── config.yaml      # Trait configuration
+├── preClone.js      # Environment validation
+└── postClone.js     # Project setup
 ```
 
-##### Configuration Options
+**2. Configure the trait:**
+```yaml
+# scripts/traits/my-trait/config.yaml
+hasCheckFunction:
+  preClone: true     # Use check() function
+  postClone: false   # Use traditional script
+traits:
+  - base-trait       # Dependencies
+```
 
-| Key               | Type      | Description                                                                                                               |
-|-------------------|-----------|---------------------------------------------------------------------------------------------------------------------------|
-| `hasCheckFunction`| `boolean` or `object` | Controls script execution mode. Can be a boolean (applies to all hooks) or an object with `preClone`/`postClone` keys specifying per-hook behavior. |
-| `traits`          | `array`   | List of other traits this trait depends on. Creates a trait hierarchy where dependencies are processed first.            |
-
-#### Check Functions vs Traditional Scripts
-
-Traits can work in two modes, configurable per hook type:
-
-1. **Check Function Mode** (`hasCheckFunction: true`):
+**3. Implement validation logic:**
 ```javascript
-// scripts/traits/composer/preClone.js
+// scripts/traits/my-trait/preClone.js
 export async function check(context) {
-    // Custom logic with access to context object
-    console.log('Checking composer installation...');
+    const { cwd, repo, logger } = context;
+
+    // Your validation logic here
+    logger.info(`Validating ${repo.name} environment...`);
+
+    if (!isEnvironmentReady()) {
+        throw new Error('Environment not ready');
+    }
+
+    logger.success('Environment validation passed');
 }
 ```
 
-2. **Traditional Script Mode** (`hasCheckFunction: false` or omitted):
-```javascript
-// scripts/traits/symfony/postClone.js
-console.log('Running Symfony setup...');
-// Script runs from top to bottom
-```
+### Trait Hierarchies
 
-#### Hook-Specific Configuration
-
-The consolidated config format allows different execution modes for different hook types:
+Build sophisticated automation with trait dependencies:
 
 ```yaml
-# scripts/traits/composer/config.yaml
-hasCheckFunction:
-  preClone: true   # Use check() function for preClone
-  postClone: false # Use traditional execution for postClone
+# Complex trait with dependencies
+scripts/traits/symfony-api/config.yaml
 traits:
-  - php
+  - php           # Ensures PHP is available
+  - composer      # Ensures Composer works
+  - symfony       # Symfony-specific setup
+  # symfony-api runs last, after all dependencies
 ```
 
-#### Trait Hierarchies and Dependency Resolution
-
-Traits can depend on other traits, creating automatic dependency resolution. Dependencies are processed depth-first, ensuring all prerequisites are handled before the dependent trait:
-
-```yaml
-# scripts/traits/symfony/config.yaml
-hasCheckFunction:
-  preClone: false
-  postClone: false
-traits:
-  - php       # Processed first
-  - composer  # Processed second
-  # symfony trait processed last
-```
-
-This ensures that `php` and `composer` traits are processed before `symfony` for all hook types.
-
-### Custom Hooks
-
-For repository-specific logic, you can use the `preClone` and `postClone` properties in `repos.yaml`.
-
-- **As a Command**: If the value does not end in `.js`, it will be executed as a shell command.
-```yaml
-postClone: 'composer install'
-```
-
-- **As a Script**: If the value ends in `.js`, the script will look for that file inside a dedicated folder in
-  `scripts/custom/<repo-name>/`.
-```yaml
-# This will execute scripts/custom/symfony-app/extra-setup.js
-postClone: 'extra-setup.js'
-```
-
-### Hook Execution Order
-
-The script processes hooks in three distinct phases:
-
-1. **Pre-clone phase**: All `preClone` hooks for **all** selected repositories
-    - Environment validation and dependency checks
-    - Ensures prerequisites are met before any file system changes
-    - Trait dependencies are resolved depth-first for each repository
-
-2. **Clone phase**: Repository creation operations
-    - Git clone operations or empty folder creation
-    - Directory conflict resolution (delete/skip existing directories)
-    - No hooks executed during this phase
-
-3. **Post-clone phase**: All `postClone` hooks for each repository
-    - Dependency installation and project setup
-    - Runs with each repository as the working directory
-    - Only runs for repositories that were successfully cloned
-
-Within hook phases, hooks are processed in this order:
-1. Trait-based hooks (with automatic dependency resolution)
-2. Custom hooks (commands or scripts)
-
----
-
-## Command Arguments
-
-You can modify the behavior of the setup script with command-line flags:
-
-```shell script
-# Verbose logging
-multirepo setup --verbose
-
-# Dry run
-multirepo setup --dry-run
-
-# Combined flags
-multirepo setup --dry-run --verbose
-
-# Short flags
-multirepo setup -d -v
-```
-
----
-
-## Error Handling
-
-The script includes robust error handling:
-
-- **Missing URLs**: If a repository doesn't have a valid Git URL, the script will offer to create an empty folder instead
-- **Missing Scripts**: If a trait references a non-existent script file, it will be skipped with a warning (unless it has valid subtraits)
-- **Failed Hooks**: If any hook fails during execution, the script will halt with an error message
-- **Circular Dependencies**: The trait system automatically prevents circular dependencies between traits
-- **Invalid Configurations**: Repository names and URLs are validated before processing begins
+**Execution order**: `php` → `composer` → `symfony` → `symfony-api`
 
 ---
 
@@ -255,43 +301,137 @@ The script includes robust error handling:
 
 ### Three-Phase Execution Model
 
-The setup script uses a carefully orchestrated three-phase approach:
+The tool uses a carefully orchestrated approach ensuring reliability:
 
-1. **Validation Phase**: All repositories and their configurations are validated
-2. **Pre-clone Phase**: Environment checks run for all repositories before any cloning
-3. **Clone & Setup Phase**: Each repository is cloned and configured individually
+**Phase 1: Environment Validation (preClone)**
+- System dependency checks
+- Tool availability validation
+- Environment prerequisites
+- Cached when environment unchanged
 
-This approach ensures that environment issues are caught early and that all repositories are processed consistently.
+**Phase 2: Repository Operations (clone)**
+- Git cloning or folder creation
+- Existing project detection
+- Conflict resolution
+- Always runs when needed
 
-### Async/Await Support
+**Phase 3: Project Setup (postClone)**
+- Dependency installation
+- Configuration validation
+- Project-specific setup
+- Cached when content unchanged
 
-The script uses modern async/await patterns throughout:
-- All Git operations are non-blocking with real-time output
-- Hook execution is fully asynchronous with proper error propagation
-- Log messages are properly synchronized to prevent output corruption
+### Error Recovery & Handling
 
-### Interactive Repository Selection
+- **Graceful degradation**: Continue processing other repositories on failure
+- **Detailed error reporting**: Pinpoint exact failure reasons
+- **Cache-aware recovery**: Failed operations don't pollute cache
+- **Interactive problem solving**: Prompt for resolution when possible
 
-When multiple repositories are configured, the script provides an enhanced checkbox interface:
-- Select individual repositories or choose "All Repositories"
-- Visual separators and clear feedback on selections
-- Empty selection prevention with helpful validation messages
-- Clean display management that doesn't interfere with logging
+### Team Collaboration Features
 
-### Flexible Repository Configuration
+**Shared Cache State:**
+- Commit `multirepo.lock` to share successful setup state
+- Team members skip already-validated operations
+- Consistent environment across development team
 
-- **Empty Folder Support**: Repositories without URLs can be set up as empty folders for development
-- **Trait Hierarchies**: Complex dependency management with automatic circular dependency prevention
-- **Mixed Execution Modes**: Each trait can use different execution modes for different hook types
-- **Context Passing**: Hook functions receive context objects with working directory and other metadata
+**Individual Flexibility:**
+- Override cache for personal development needs
+- Local customizations don't affect team setup
+- Selective cache control per operation type
 
-### Smart Hook Resolution
+---
 
-The trait system includes sophisticated dependency resolution:
-- **Depth-First Processing**: Dependencies are always processed before dependents
-- **Duplicate Prevention**: Each trait is processed only once per repository per hook type
-- **Consolidated Configuration**: Single `config.yaml` files replace multiple hook-specific configuration files
-- **Graceful Degradation**: Traits without scripts for specific hook types are handled gracefully if they have valid dependencies
+## Troubleshooting
+
+### Common Issues & Solutions
+
+**Cache appears stale:**
+```bash
+# Update cache checksums
+multirepo setup --update-lock
+
+# Or start completely fresh
+multirepo setup --clear-lock --force-all
+```
+
+**Operations not being cached:**
+```bash
+# See detailed cache decisions
+multirepo setup --verbose
+
+# Check what's being detected as changed
+multirepo setup --dry-run --verbose
+```
+
+**Performance problems:**
+```bash
+# Compare with/without cache
+multirepo setup --skip-cache
+multirepo setup
+
+# Force specific operations only
+multirepo setup --force-postclone
+```
+
+**Team synchronization issues:**
+```bash
+# Update shared cache state
+multirepo setup --update-lock
+git add multirepo.lock && git commit -m "Update setup cache"
+
+# Or use individual caching
+echo "multirepo.lock" >> .gitignore
+```
+
+### Debug Mode
+
+```bash
+# Maximum verbosity for troubleshooting
+NODE_ENV=development multirepo setup --verbose --dry-run
+```
+
+---
+
+## Hook Execution Order
+
+The script processes hooks in three distinct phases with intelligent caching:
+
+1. **Pre-clone phase**: All `preClone` hooks for **all** selected repositories
+    - Environment validation and dependency checks
+    - Ensures prerequisites are met before any file system changes
+    - Trait dependencies are resolved depth-first for each repository
+    - **Cached based on**: trait script changes, repos.yaml changes, custom script changes
+
+2. **Clone phase**: Repository creation operations
+    - Git clone operations or empty folder creation
+    - Directory conflict resolution (delete/skip existing directories)
+    - No hooks executed during this phase
+    - **No caching applied**: Always runs when needed
+
+3. **Post-clone phase**: All `postClone` hooks for each repository
+    - Dependency installation and project setup
+    - Runs with each repository as the working directory
+    - Only runs for repositories that were successfully cloned
+    - **Cached based on**: repository content changes, dependency file changes, trait script changes, custom script changes
+
+Within hook phases, hooks are processed in this order:
+1. Trait-based hooks (with automatic dependency resolution)
+2. Custom hooks (commands or scripts)
+
+---
+
+## Error Handling
+
+The script includes robust error handling with caching awareness:
+
+- **Missing URLs**: If a repository doesn't have a valid Git URL, the script will offer to create an empty folder instead
+- **Missing Scripts**: If a trait references a non-existent script file, it will be skipped with a warning (unless it has valid subtraits)
+- **Failed Hooks**: If any hook fails during execution, the failure is cached to prevent retry loops
+- **Circular Dependencies**: The trait system automatically prevents circular dependencies between traits
+- **Invalid Configurations**: Repository names and URLs are validated before processing begins
+- **Cache Corruption**: Lock file integrity is validated, with automatic recovery from corruption
+- **Version Compatibility**: Lock file format versions are checked for compatibility
 
 ---
 
@@ -315,4 +455,86 @@ For one-time usage without installation:
 ```shell script
 npx multirepo setup
 ```
+
+### Lock File Recommendations
+
+**For team projects:**
+```gitignore
+# Commit lock file for shared cache state
+# multirepo.lock
 ```
+
+**For individual development:**
+```gitignore
+# Ignore lock file for per-developer caching
+multirepo.lock
+```
+
+Choose based on your team's workflow and whether you want shared or individual caching behavior.
+
+---
+
+## Contributing
+
+We welcome contributions! Here's how to get started:
+
+### Development Setup
+
+```bash
+# Fork and clone the repository
+git clone https://github.com/your-fork/multirepo-setup.git
+cd multirepo-setup
+
+# Install development dependencies
+npm install
+
+# Run tests
+npm test
+
+# Test your changes
+./bin/console setup --verbose
+```
+
+### Contribution Guidelines
+
+- **New traits**: Add comprehensive validation and documentation
+- **Bug fixes**: Include test cases and clear reproduction steps
+- **Performance improvements**: Provide clear reasoning for changes
+- **Documentation**: Update README for any user-facing changes
+
+### Areas for Contribution
+
+- **New trait implementations**:
+    - `python` - Python environment setup and virtual environments
+    - `go` - Go workspace configuration and modules
+    - `node` - Node.js runtime environment validation
+    - `docker` - Docker environment validation and container setup
+    - `nginx` - Nginx configuration and validation
+    - `tools` - General development tooling setup
+    - `ruby` - Ruby environment and gem management
+    - `rust` - Rust toolchain and Cargo setup
+    - `java` - Java environment and build tools (Maven/Gradle)
+    - `dotnet` - .NET Core environment and project setup
+
+- **Performance optimizations** in caching or execution
+- **Additional CLI options** and workflow improvements
+- **Documentation and examples** for complex setups
+- **Test coverage** and quality improvements
+
+---
+
+## License
+
+MIT License - see [LICENSE](./LICENSE) file for details.
+
+---
+
+## Author
+
+Created by [Björn Berg](https://github.com/RamirezRTG)
+
+---
+
+## Acknowledgments
+
+Built with modern Node.js patterns and inspired by the best practices from package managers and build tools. Special thanks to the open source community for the excellent libraries that make this tool possible.

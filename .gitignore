@@ -9,8 +9,7 @@
 node_modules
 packages
 
-### Configuration Files ###
+### Multirepo Configuration Files ###
 repos.yaml
 scripts/custom/*
 multirepo.lock
-package-lock.json
