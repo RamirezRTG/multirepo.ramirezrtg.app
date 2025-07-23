@@ -8,6 +8,15 @@ A CLI tool that streamlines the setup and management of multiple repositories th
 
 ---
 
+## What this tool is about
+
+Initially I just wanted to create a monorepo for a project that consists of 4 distinct sub-applications. But, as I started to simultaneously set up the components,
+I realized this simply doesn't work for me. So I started with the wrapper project, aka the multirepo, approach. After learning a lot about nodejs that way, brainstorming
+with real and artificial people, this is what was created. Maybe this solves someone else's problem someday.
+
+Micro-Disclaimer: Many passages are created with the help of a coding AI. I am not ashamed of it, because the whole concept is still a good old HUMAN brain child. AI is a tool
+like any other and will never replace human ingenuity. But it helped bring this project to life when I was stuck and will help in it's expansion.
+
 ## Key Features
 
 ### Intelligent Caching System
@@ -45,7 +54,7 @@ A CLI tool that streamlines the setup and management of multiple repositories th
 ## Quick Start
 
 ### Prerequisites
-- Node.js 16+ and npm
+- Node.js 18+ and npm
 - Git installed and configured
 - Access to your repositories
 
