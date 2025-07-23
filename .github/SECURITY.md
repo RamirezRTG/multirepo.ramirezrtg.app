@@ -141,7 +141,7 @@ To use this tool securely:
 
 ## Contact Information
 
-- **Security Email**: [security@bjoern-berg.com](mailto:security@bjoern-berg.com)
+- **Security Email**: [me@bjoern-berg.com](mailto:me@bjoern-berg.com)
 - **Maintainer**: Björn Berg
 - **Response Languages**: English, German
 
