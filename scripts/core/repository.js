@@ -40,6 +40,32 @@ export async function handleExistingDirectory(repo, repoPath, askQuestion) {
     // Check if this looks like an existing project
     const projectIndicators = detectProjectType(repoPath);
 
+    // Git Precheck
+    if (!repo.url) {
+        const gitDir = path.join(repoPath, '.git');
+        if (fs.existsSync(gitDir)) {
+            try {
+                const { execSync } = await import('child_process');
+                const remoteUrl = execSync('git remote get-url origin', {
+                    cwd: repoPath,
+                    encoding: 'utf8'
+                }).trim();
+
+                logError(`Git repository detected but no URL configured in repos.yaml`);
+                logInfo(`Detected remote origin: ${chalk.cyan(remoteUrl)}`);
+                logInfo(`Please add the following to your repos.yaml:`);
+                logInfo(`  url: ${chalk.white(remoteUrl)}`);
+                throw new Error(`Missing URL configuration for git repository: ${repo.name}`);
+            } catch (gitError) {
+                if (gitError.message.includes('Missing URL configuration')) {
+                    throw gitError; // Re-throw our custom error
+                }
+                // Git command failed, but still warn about missing URL for git repo
+                logWarn(`Git repository exists but no remote origin found and no URL in repos.yaml`);
+            }
+        }
+    }
+
     if (projectIndicators.length > 0) {
         logInfo(`Detected existing ${projectIndicators.join(', ')} project in '${chalk.white(repo.name)}'.`);
 

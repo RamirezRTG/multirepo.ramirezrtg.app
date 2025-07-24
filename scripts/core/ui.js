@@ -3,6 +3,7 @@
  * Handles user prompts, interactions, and dry-run displays
  */
 import readline from 'readline';
+import path from 'path';
 import yaml from 'js-yaml';
 import chalk from 'chalk';
 import { log, logInfo, logQuestion, logSuccess } from '../helper/logger.js';

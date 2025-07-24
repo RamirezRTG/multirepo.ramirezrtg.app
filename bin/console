@@ -26,19 +26,24 @@ Usage: multirepo <command> [options]
 
 Commands:
   setup              Set up repositories from repos.yaml
+  test               Run repository handling test matrix
 
 Basic Options:
   --verbose, -v      Enable verbose logging
   --dry-run, -d      Show what would be done without making changes
   --help, -h         Show this help message
 
-Cache Options:
+Cache Options (setup only):
   --force-preclone   Skip preClone cache and re-run all preClone hooks
   --force-postclone  Skip postClone cache and re-run all postClone hooks
   --force-all        Skip all cache and re-run everything
   --skip-cache       Ignore lock file completely (don't read or write)
   --update-lock      Update lock file without skipping operations
   --clear-lock       Delete existing lock file and start fresh
+
+Test Options:
+  --all              Run all test scenarios
+  --list             List all available test scenarios
 
 Examples:
   multirepo setup                    # Interactive repository setup with caching
@@ -48,6 +53,10 @@ Examples:
   multirepo setup --force-postclone # Skip only postClone cache
   multirepo setup --skip-cache      # Run without any caching
   multirepo setup --clear-lock      # Start fresh with no cache
+  
+  multirepo test                     # Interactive test mode
+  multirepo test --all               # Run all test scenarios
+  multirepo test --list              # List all test scenarios
 
 Cache Behavior:
   By default, the setup tool uses intelligent caching to skip unnecessary operations.
@@ -94,7 +103,7 @@ function parseArgs(args) {
                     showHelp();
                     process.exit(0);
                     break;
-                // New cache-related flags
+                // Cache-related flags (setup only)
                 case '--force-preclone':
                     parsed.flags.push('--force-preclone');
                     break;
@@ -112,6 +121,13 @@ function parseArgs(args) {
                     break;
                 case '--clear-lock':
                     parsed.flags.push('--clear-lock');
+                    break;
+                // Test-related flags
+                case '--all':
+                    parsed.flags.push('--all');
+                    break;
+                case '--list':
+                    parsed.flags.push('--list');
                     break;
                 default:
                     console.error(`Unknown option: ${arg}`);
@@ -154,6 +170,35 @@ async function executeSetup(flags) {
 }
 
 /**
+ * Execute the test command
+ */
+async function executeTest(flags) {
+    const testScriptPath = join(scriptsDir, 'test.js');
+
+    try {
+        // Dynamically import and execute the test script
+        // We need to manipulate process.argv to pass the flags correctly
+        const originalArgv = process.argv.slice();
+
+        // Set up argv as if test.js was called directly with flags
+        process.argv = ['node', testScriptPath, ...flags];
+
+        // Convert the file path to a proper file URL for Windows compatibility
+        const testScriptURL = pathToFileURL(testScriptPath).href;
+
+        // Import and execute the test script
+        await import(testScriptURL);
+
+        // Restore original argv (though script will likely exit before this)
+        process.argv = originalArgv;
+
+    } catch (error) {
+        console.error('Failed to execute test:', error.message);
+        process.exit(1);
+    }
+}
+
+/**
  * Main entry point
  */
 async function main() {
@@ -171,6 +216,9 @@ async function main() {
     switch (parsed.command) {
         case 'setup':
             await executeSetup(parsed.flags);
+            break;
+        case 'test':
+            await executeTest(parsed.flags);
             break;
         case null:
             console.error('No command specified.');

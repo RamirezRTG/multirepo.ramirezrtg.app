@@ -1,0 +1,5 @@
+# Git directory
+.git/
+
+# IDE files (from lockfile exclude patterns)
+.idea/
