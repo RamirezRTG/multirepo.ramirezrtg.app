@@ -1,4 +1,5 @@
 hasCheckFunction:
+  preClone: false
   postClone: true
 traits:
   - npm
