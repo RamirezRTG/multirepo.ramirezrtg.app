@@ -280,7 +280,7 @@ async function runPostClonePhase(repos) {
     groupStart('Phase 3: Project Validation & Setup');
 
     try {
-        const reposToProcess = repos.filter(r => !r._skipClone || r._existingProject);
+        const reposToProcess = repos;
         logInfo(`Running post-clone setup for ${chalk.cyan(reposToProcess.length)} repositories...`);
 
         for (const repo of reposToProcess) {
