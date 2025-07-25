@@ -30,6 +30,7 @@ import chalk from 'chalk';
 import { log, logError, logInfo, logSuccess, logWarn } from '../helper/logger.js';
 // Configuration constants for directory paths
 import { packagesDir } from './config.js';
+import {safePrompt} from "./ui.js";
 
 /*
 ================================================================================
@@ -248,22 +249,24 @@ async function handleExistingProjectConflict(repo, repoPath, askQuestion) {
     // Always show skip option
     options.push('Skip this repository');
 
-    // === USER CHOICE PRESENTATION ===
-    logInfo('Choose how to handle this existing project:');
-    options.forEach((option, index) => {
-        logInfo(`  ${chalk.cyan(index + 1)}. ${option}`);
+    // === INTERACTIVE CHOICE PRESENTATION ===
+    // Use safePrompt for consistent UI and robust validation
+    const { choice } = await safePrompt({
+        type: 'list',
+        name: 'choice',
+        message: 'Choose how to handle this existing project:',
+        allowEmpty: false,
+        emptyMessage: 'You must select an option to proceed.',
+        choices: options.map((option, index) => ({
+            name: option,
+            value: index
+        })),
+        default: options.length - 1 // Use last choice as default
     });
 
-    const choice = await askQuestion(`Enter choice (1-${options.length}): `);
-    const choiceIndex = parseInt(choice) - 1;
+    // === CHOICE EXECUTION ===
+    return await executeExistingProjectChoice(repo, repoPath, choice, options, askQuestion);
 
-    // === CHOICE VALIDATION AND EXECUTION ===
-    if (choiceIndex >= 0 && choiceIndex < options.length) {
-        return await executeExistingProjectChoice(repo, repoPath, choiceIndex, options, askQuestion);
-    } else {
-        logWarn('Invalid choice. Skipping repository.');
-        return true; // Skip
-    }
 }
 
 /**

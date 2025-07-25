@@ -1,3 +1,5 @@
 hasCheckFunction:
   preClone: true
   postClone: true
+traits:
+  - nodejs

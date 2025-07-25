@@ -1,0 +1,4 @@
+hasCheckFunction:
+  preClone: true
+  postClone: false
+traits: []

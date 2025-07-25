@@ -1,8 +1,8 @@
 # Multirepo Setup Tool
 
-**Interactive Multi-Repository Management with Intelligent Caching**
+**Interactive Multi-Repository Management with Intelligent Caching & Comprehensive Testing**
 
-A CLI tool that streamlines the setup and management of multiple repositories through intelligent caching, trait-based automation, and comprehensive validation.
+A CLI tool that streamlines the setup and management of multiple repositories through intelligent caching, trait-based automation, comprehensive validation, and extensive testing capabilities.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -22,32 +22,44 @@ like any other and will never replace human ingenuity. But it helped bring this 
 ### Intelligent Caching System
 - **Smart change detection** through SHA256-based checksums
 - **Automatic cache invalidation** when dependencies, scripts, or configurations change
-- **Significant performance improvements** on subsequent runs
+- **Significant performance improvements** on subsequent runs (up to 90%+ cache efficiency)
 - **Team-shareable cache state** via lock file
+- **Cache effectiveness analytics** with detailed reporting
 
 ### Interactive Repository Management
 - Multi-select interface for choosing repositories to process
-- Existing project detection with smart handling options
+- **Context-aware conflict resolution** with smart handling options
+- Existing project detection with Git repository state analysis
 - Empty folder support for new project scaffolding
-- Conflict resolution for existing directories
+- **Dynamic option generation** based on actual repository state
+
+### Comprehensive Testing Framework
+- **Automated test matrix** covering all repository handling scenarios
+- **Interactive test mode** for focused debugging and development
+- **Mock user interaction simulation** for testing interactive prompts
+- **Cross-platform compatibility testing** with proper cleanup procedures
+- **Comprehensive scenario coverage** (URL/no-URL, Git states, project types)
 
 ### Trait-Based Automation
 - Reusable validation scripts for common project types (npm, PHP, React, Symfony, etc.)
 - Hierarchical trait dependencies with automatic resolution
 - Mixed execution modes (check functions vs traditional scripts)
 - Custom hook support for repository-specific logic
+- **Intelligent trait suggestion system** based on project analysis
 
-### Comprehensive Reporting
-- Real-time progress tracking with grouped, colored output
-- Cache efficiency statistics showing operation optimization
-- Detailed validation results with actionable suggestions
-- Error handling with graceful degradation
+### Enhanced Error Handling & Recovery
+- **Three-phase execution model** ensuring consistency
+- **Graceful degradation** with partial success scenarios
+- **Comprehensive error recovery** with detailed diagnostics
+- **Signal handling** for clean shutdown (SIGINT, SIGTERM)
+- **Development vs production error levels** for appropriate detail
 
 ### Performance & Reliability
-- Three-phase execution model ensuring consistency
 - Async/await throughout for non-blocking operations
-- Robust error handling with automatic recovery
+- **Cache effectiveness reporting** with optimization metrics
+- **Detailed progress tracking** with grouped, colored output
 - Dry-run support for safe previewing
+- **Statistical analysis** of setup operations
 
 ---
 
@@ -73,17 +85,22 @@ npm install
 
 # Or with detailed logging
 ./bin/console setup --verbose
+
+# Test the repository handling logic
+./bin/console test
 ```
 
 ### What Happens Next
 1. Interactive repository selection from your `repos.yaml`
-2. Environment validation with intelligent caching
-3. Automated cloning or project detection
-4. Trait-based setup and validation
-5. Comprehensive success reporting
+2. **Cache effectiveness analysis** and optimization reporting
+3. Environment validation with intelligent caching
+4. **Context-aware conflict resolution** for existing projects
+5. Automated cloning or project detection
+6. Trait-based setup and validation
+7. **Comprehensive analytics** and success reporting
 
 **First run**: Full setup with cache creation  
-**Subsequent runs**: Optimized execution with intelligent caching
+**Subsequent runs**: Optimized execution with intelligent caching (often 70-90% operations skipped)
 
 ---
 
@@ -96,6 +113,7 @@ multirepo <command> [options]
 
 ### Core Commands
 - `setup` - Interactive repository setup with intelligent caching
+- `test` - Comprehensive test suite for repository handling logic
 
 ### Options Overview
 
@@ -116,8 +134,14 @@ multirepo <command> [options]
 --update-lock      # Update cache without skipping operations
 ```
 
-### Common Usage Examples
+#### Testing Options
+```bash
+--all              # Run complete test suite automatically
+--list             # Display available test scenarios
+--verbose, -v      # Enable detailed test debugging output
+```
 
+### Common Usage Examples
 ```bash
 # Standard workflow - fast with caching
 multirepo setup
@@ -136,7 +160,64 @@ multirepo setup --force-all
 
 # Team sync - update shared cache
 multirepo setup --update-lock
+
+# Run comprehensive tests
+multirepo test --all
+
+# Interactive testing for development
+multirepo test
+
+# List all test scenarios
+multirepo test --list
 ```
+---
+
+## Comprehensive Testing System
+
+### Test Matrix Coverage
+
+The tool includes an extensive test suite that validates repository handling across all possible scenarios:
+
+**Test Dimensions:**
+- **URL Configuration**: Repository has URL vs no URL configured
+- **Directory States**: Exists/doesn't exist, empty/contains files
+- **Git Repository States**: No git, git without remote, git with wrong/correct remote
+- **Project Indicators**: Has package.json and source files vs random files only
+
+### Test Execution Modes
+
+**Interactive Mode (Default):**
+```bash
+multirepo test
+# Select individual scenarios or run complete suite
+```
+
+**Automated Full Suite:**
+```bash
+multirepo test --all
+# Runs all 13+ test scenarios automatically
+```
+
+**Scenario Information:**
+```bash
+multirepo test --list
+# Display all available test scenarios with descriptions
+```
+
+### Test Scenario Examples
+
+The test matrix includes scenarios like:
+- `URL_01`: Fresh clone into non-existent directory
+- `URL_04`: Existing project with URL - offers integration options
+- `NO_URL_04`: Existing project without URL - limited options
+- `ERROR_GIT_NO_URL`: Git repo without URL configuration
+
+### Mock Interaction Testing
+
+- **Automated user response simulation** for interactive prompts
+- **Realistic test environments** with proper Git repository setup
+- **Cross-platform compatibility** testing and cleanup
+- **Comprehensive result analysis** with performance metrics
 
 ---
 
@@ -152,6 +233,17 @@ The tool creates a `multirepo.lock` file tracking:
 | **Trait scripts** | Script or config modifications | Skip environment checks |
 | **Dependencies** | package.json, composer.json changes | Skip installation steps |
 | **Global config** | repos.yaml modifications | Skip validation steps |
+
+### Cache Performance Analytics
+
+The system provides detailed cache effectiveness reporting:
+```bash
+# Example cache efficiency output
+Cache Optimization Performance:
+PreClone operations cached: 4/5 (80%)
+PostClone operations cached: 3/4 (75%)
+Overall cache efficiency: 78% (7/9 operations optimized)
+```
 
 ### Cache Control Strategies
 
@@ -173,40 +265,67 @@ echo "multirepo.lock" >> .gitignore
 # Nuclear option - fresh start
 multirepo setup --clear-lock --force-all
 ```
+---
+
+## Enhanced Repository Conflict Resolution
+
+### Context-Aware Options
+
+The tool now intelligently adapts its options based on the actual state of repositories:
+
+**For repositories WITH URLs:**
+- Git initialization only shown when git is not already initialized
+- Remote setup options adapt based on existing Git configuration
+- Remote update prompts when URLs don't match
+- Clean "Use existing project" option without unnecessary suffixes
+
+**For repositories WITHOUT URLs:**
+- Limited but appropriate options for local development
+- Smart error handling for misconfigured Git repositories
+- Helpful suggestions for configuration improvements
+
+### Dynamic Option Generation
+
+Instead of showing fixed options, the system analyzes:
+- Current Git repository state
+- Remote configuration status
+- URL availability in configuration
+- Project structure indicators
+
+Then generates contextually appropriate choices for each situation.
 
 ---
 
 ## Configuration: `repos.yaml`
 
 Define your repository ecosystem in a declarative format:
-
 ```yaml
 repos:
   # Frontend applications
   react-dashboard:
     url: https://github.com/company/react-dashboard.git
     traits: ['npm', 'react', 'typescript']
-
+    
   vue-storefront:
     url: https://github.com/company/vue-storefront.git
     traits: ['npm', 'vue']
-
+    
   # Backend services
   api-gateway:
     url: https://github.com/company/api-gateway.git
     traits: ['php', 'composer', 'symfony']
     postClone: 'composer install --no-dev'
-
+    
   user-service:
     url: https://github.com/company/user-service.git
     traits: ['npm', 'node', 'typescript']
     postClone: 'setup-database.js'
-
-  # Development tools
+    
+    # Development tools
   shared-configs:
     url: https://github.com/company/configs.git
     traits: ['tools']
-
+    
   # Local development
   local-proxy:
     # No URL = creates empty folder for local development
@@ -223,7 +342,6 @@ repos:
 | `postClone` | `string` | No | Command or script to run after cloning |
 
 ---
-
 
 ## Trait-Based Automation System
 
@@ -251,6 +369,15 @@ Transform repetitive setup tasks into reusable automation:
 - `nextjs` - Next.js framework
 - `express` - Express.js server framework
 
+### Intelligent Trait Suggestion
+
+The system can analyze repositories and suggest missing traits:
+```
+bash
+# Automatic trait recommendations based on project analysis
+React dependencies detected. Consider adding 'react' trait for enhanced validation.
+TypeScript configuration detected. Consider adding 'typescript' trait for enhanced setup.
+```
 ### Creating Custom Traits
 
 **1. Create trait structure:**
@@ -267,15 +394,15 @@ scripts/traits/my-trait/
 hasCheckFunction:
   preClone: true     # Use check() function
   postClone: false   # Use traditional script
-traits:
-  - base-trait       # Dependencies
+  traits:
+    - base-trait       # Dependencies
 ```
 
 **3. Implement validation logic:**
 ```javascript
 // scripts/traits/my-trait/preClone.js
 export async function check(context) {
-    const { cwd, repo, logger } = context;
+const { cwd, repo, logger } = context;
 
     // Your validation logic here
     logger.info(`Validating ${repo.name} environment...`);
@@ -291,15 +418,14 @@ export async function check(context) {
 ### Trait Hierarchies
 
 Build sophisticated automation with trait dependencies:
-
 ```yaml
 # Complex trait with dependencies
-scripts/traits/symfony-api/config.yaml
+# scripts/traits/symfony-api/config.yaml
 traits:
-  - php           # Ensures PHP is available
-  - composer      # Ensures Composer works
-  - symfony       # Symfony-specific setup
-  # symfony-api runs last, after all dependencies
+- php           # Ensures PHP is available
+- composer      # Ensures Composer works
+- symfony       # Symfony-specific setup
+# symfony-api runs last, after all dependencies
 ```
 
 **Execution order**: `php` → `composer` → `symfony` → `symfony-api`
@@ -316,26 +442,29 @@ The tool uses a carefully orchestrated approach ensuring reliability:
 - System dependency checks
 - Tool availability validation
 - Environment prerequisites
-- Cached when environment unchanged
+- **Cached when environment unchanged**
+- **Cache efficiency reporting**
 
 **Phase 2: Repository Operations (clone)**
 - Git cloning or folder creation
-- Existing project detection
-- Conflict resolution
-- Always runs when needed
+- **Context-aware conflict resolution**
+- Existing project detection and integration
+- **Always runs when needed**
 
 **Phase 3: Project Setup (postClone)**
 - Dependency installation
 - Configuration validation
 - Project-specific setup
-- Cached when content unchanged
+- **Cached when content unchanged**
+- **Graceful error recovery**
 
-### Error Recovery & Handling
+### Enhanced Error Recovery & Handling
 
 - **Graceful degradation**: Continue processing other repositories on failure
-- **Detailed error reporting**: Pinpoint exact failure reasons
+- **Detailed error reporting**: Pinpoint exact failure reasons with stack traces in development
 - **Cache-aware recovery**: Failed operations don't pollute cache
-- **Interactive problem solving**: Prompt for resolution when possible
+- **Interactive problem solving**: Context-aware prompts for resolution
+- **Signal handling**: Clean shutdown on SIGINT/SIGTERM with proper cleanup
 
 ### Team Collaboration Features
 
@@ -343,11 +472,49 @@ The tool uses a carefully orchestrated approach ensuring reliability:
 - Commit `multirepo.lock` to share successful setup state
 - Team members skip already-validated operations
 - Consistent environment across development team
+- **Cache effectiveness analytics** for team optimization
 
 **Individual Flexibility:**
 - Override cache for personal development needs
 - Local customizations don't affect team setup
 - Selective cache control per operation type
+- **Performance metrics** for optimization insights
+
+---
+
+## Development & Testing
+
+### Running Tests
+
+The comprehensive test suite validates all repository handling scenarios:
+```bash
+# Interactive test selection
+multirepo test
+
+# Run all tests automatically
+multirepo test --all
+
+# List available test scenarios
+multirepo test --list
+
+# Verbose testing with debugging information
+multirepo test --all --verbose
+```
+
+### Test Results Analysis
+
+The test suite provides detailed analytics:
+- **Success rate calculations** with performance metrics
+- **Failure analysis** with categorization and debugging information
+- **Scenario breakdown** by repository type and configuration
+- **Execution time analysis** for performance optimization
+
+### Development Mode
+```bash
+# Maximum verbosity for development and troubleshooting
+NODE_ENV=development multirepo setup --verbose --dry-run
+NODE_ENV=development multirepo test --all --verbose
+```
 
 ---
 
@@ -383,6 +550,16 @@ multirepo setup
 multirepo setup --force-postclone
 ```
 
+**Repository conflict resolution issues:**
+```bash
+# Test repository handling logic
+multirepo test
+
+# Run specific conflict scenarios
+multirepo test
+# Then select scenarios like URL_04, NO_URL_04
+```
+
 **Team synchronization issues:**
 ```bash
 # Update shared cache state
@@ -394,10 +571,10 @@ echo "multirepo.lock" >> .gitignore
 ```
 
 ### Debug Mode
-
 ```bash
 # Maximum verbosity for troubleshooting
 NODE_ENV=development multirepo setup --verbose --dry-run
+NODE_ENV=development multirepo test --all --verbose
 ```
 
 ---
@@ -411,17 +588,20 @@ The script processes hooks in three distinct phases with intelligent caching:
     - Ensures prerequisites are met before any file system changes
     - Trait dependencies are resolved depth-first for each repository
     - **Cached based on**: trait script changes, repos.yaml changes, custom script changes
+    - **Cache efficiency reporting**: Shows percentage of operations optimized
 
 2. **Clone phase**: Repository creation operations
     - Git clone operations or empty folder creation
-    - Directory conflict resolution (delete/skip existing directories)
+    - **Context-aware directory conflict resolution**
+    - **Enhanced existing project integration**
     - No hooks executed during this phase
     - **No caching applied**: Always runs when needed
 
 3. **Post-clone phase**: All `postClone` hooks for each repository
     - Dependency installation and project setup
     - Runs with each repository as the working directory
-    - Only runs for repositories that were successfully cloned
+    - **Processes all repositories** (not just successfully cloned ones)
+    - **Graceful error recovery**: Continue processing other repositories on failure
     - **Cached based on**: repository content changes, dependency file changes, trait script changes, custom script changes
 
 Within hook phases, hooks are processed in this order:
@@ -432,15 +612,17 @@ Within hook phases, hooks are processed in this order:
 
 ## Error Handling
 
-The script includes robust error handling with caching awareness:
+The script includes robust error handling with enhanced caching awareness:
 
-- **Missing URLs**: If a repository doesn't have a valid Git URL, the script will offer to create an empty folder instead
-- **Missing Scripts**: If a trait references a non-existent script file, it will be skipped with a warning (unless it has valid subtraits)
-- **Failed Hooks**: If any hook fails during execution, the failure is cached to prevent retry loops
-- **Circular Dependencies**: The trait system automatically prevents circular dependencies between traits
-- **Invalid Configurations**: Repository names and URLs are validated before processing begins
-- **Cache Corruption**: Lock file integrity is validated, with automatic recovery from corruption
-- **Version Compatibility**: Lock file format versions are checked for compatibility
+- **Missing URLs**: Interactive prompts offer to create empty folders instead
+- **Missing Scripts**: Trait references to non-existent scripts are skipped with warnings
+- **Failed Hooks**: Failures are cached to prevent retry loops, with graceful degradation
+- **Circular Dependencies**: Automatic prevention in trait dependency resolution
+- **Invalid Configurations**: Comprehensive validation before processing begins
+- **Cache Corruption**: Lock file integrity validation with automatic recovery
+- **Version Compatibility**: Lock file format version checking
+- **Context-Aware Conflicts**: Smart resolution based on actual repository state
+- **Signal Handling**: Clean shutdown on interruption with proper cleanup
 
 ---
 
@@ -450,19 +632,18 @@ The script includes robust error handling with caching awareness:
 For development use, run commands directly from the project:
 ```shell script
 ./bin/console setup
+./bin/console test
 ```
 
-### Global Installation
-If you want to use the tool system-wide:
 ```shell script
 npm install -g .
 multirepo setup
+multirepo test
 ```
 
-### Using npx
-For one-time usage without installation:
 ```shell script
 npx multirepo setup
+npx multirepo test
 ```
 
 ### Lock File Recommendations
@@ -499,6 +680,8 @@ npm install
 
 # Run tests
 npm test
+# Or use the built-in test suite
+./bin/console test --all
 
 # Test your changes
 ./bin/console setup --verbose
@@ -508,8 +691,9 @@ npm test
 
 - **New traits**: Add comprehensive validation and documentation
 - **Bug fixes**: Include test cases and clear reproduction steps
-- **Performance improvements**: Provide clear reasoning for changes
+- **Performance improvements**: Provide clear reasoning and metrics
 - **Documentation**: Update README for any user-facing changes
+- **Testing**: Ensure all test scenarios pass with new features
 
 ### Areas for Contribution
 
@@ -527,8 +711,9 @@ npm test
 
 - **Performance optimizations** in caching or execution
 - **Additional CLI options** and workflow improvements
+- **Test scenario expansion** for edge cases and new features
 - **Documentation and examples** for complex setups
-- **Test coverage** and quality improvements
+- **Enhanced error handling** and recovery mechanisms
 
 ---
 
@@ -546,4 +731,4 @@ Created by [Björn Berg](https://github.com/RamirezRTG)
 
 ## Acknowledgments
 
-Built with modern Node.js patterns and inspired by the best practices from package managers and build tools. Special thanks to the open source community for the excellent libraries that make this tool possible.
+Built with modern Node.js patterns and inspired by the best practices from package managers and build tools. Special thanks to the open source community for the excellent libraries that make this tool possible, and to the comprehensive testing methodologies that ensure reliable repository management.

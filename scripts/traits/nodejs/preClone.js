@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import { logError, logSuccess, logInfo } from '../../helper/logger.js';
+import { logError, logSuccess } from '../../helper/logger.js';
 import chalk from 'chalk';
 import { pathToFileURL } from 'url';
 
@@ -17,15 +17,6 @@ export function check(context) {
         }
     } catch (error) {
         logError('Node.js not found. Please install Node.js to continue.');
-        process.exit(1);
-    }
-
-    // Check npm
-    try {
-        const npmVersion = execSync('npm --version', { encoding: 'utf8', stdio: 'pipe' }).trim();
-        logSuccess(`npm is installed: ${chalk.white(npmVersion)}`);
-    } catch (error) {
-        logError('npm not found. Please install npm to continue.');
         process.exit(1);
     }
 }

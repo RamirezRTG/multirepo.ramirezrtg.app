@@ -41,6 +41,31 @@ import { isDryRun, isVerbose, packagesDir } from './config.js';
 // Hook system integration for execution plan generation
 import { getHooksForRepo } from './hooks.js';
 
+/**
+ * Display YAML execution plan with line-by-line output for proper logger integration
+ *
+ * @param {Object} plan - The execution plan object to display as YAML
+ */
+function displayYamlPlan(plan) {
+    // Format YAML with custom styling for better readability
+    const yamlOutput = yaml.dump(plan, {
+        styles: {
+            '!!str': 'white'
+        },
+        noRefs: true,
+        indent: 2,
+        lineWidth: 100
+    });
+
+    // Output YAML line by line for proper logger integration
+    const yamlLines = yamlOutput.split('\n');
+    yamlLines.forEach(line => {
+        if (line.trim()) { // Skip empty lines
+            log(line);
+        }
+    });
+}
+
 /*
 ================================================================================
 ADVANCED PROMPT SYSTEM WITH VALIDATION
@@ -119,16 +144,40 @@ export async function safePrompt(safePromptConfig) {
         choices.push(choice);
     }
 
+    // === DEFAULT VALUE VALIDATION ===
+    // Ensure default value is a selectable choice, fallback to last choice if not
+    const validatedDefault = (() => {
+        const configuredDefault = safePromptConfig.default;
+
+        // Check if the configured default is a valid choice value
+        const validChoiceValues = choices
+            .filter(choice => choice.value !== undefined && typeof choice.separator === 'undefined')
+            .map(choice => choice.value);
+
+        if (configuredDefault && validChoiceValues.includes(configuredDefault)) {
+            return configuredDefault;
+        }
+
+        // Check if the configured default is the "select all" option
+        if (safePromptConfig.allChoice) {
+            return 'all';
+        }
+
+        // Fallback to last valid choice if configured default is not selectable
+        return validChoiceValues.length > 0 ? validChoiceValues[validChoiceValues.length - 1] : undefined;
+    })();
+
     // === INQUIRER PROMPT CONFIGURATION ===
     // Assemble the complete prompt configuration object
     let promptConfig = {
         type: safePromptConfig.type,
         message: safePromptConfig.message,
         name: safePromptConfig.name,
-        default: safePromptConfig.default,
+        default: validatedDefault,
         choices: choices,
         validate: validate,
     };
+
 
     // === PROMPT EXECUTION AND CLEANUP ===
     // Execute the prompt and handle console cleanup
@@ -427,21 +476,12 @@ export function displayDryRunSummary(repos) {
 
         // === YAML PLAN OUTPUT ===
         // Display the complete plan in structured YAML format
-        log(chalk.yellow('\n' + '='.repeat(50)));
+        log(chalk.yellow('='.repeat(50)));
         log(chalk.yellow.bold('COMPREHENSIVE EXECUTION PLAN (DRY RUN)'));
         log(chalk.yellow('='.repeat(50)));
 
-        // Format YAML with custom styling for better readability
-        const yamlOutput = yaml.dump(plan, {
-            styles: {
-                '!!str': 'white'
-            },
-            noRefs: true,
-            indent: 2,
-            lineWidth: 100
-        });
+        displayYamlPlan(plan);
 
-        log(yamlOutput);
         log(chalk.yellow('='.repeat(50)));
 
     } else {
@@ -450,7 +490,7 @@ export function displayDryRunSummary(repos) {
 
         // === REPOSITORY-BY-REPOSITORY SUMMARY ===
         for (const repo of repos) {
-            log(chalk.bold.white(`\n📁 Plan for ${repo.name}:`));
+            log(chalk.bold.white(`📁 Plan for ${repo.name}:`));
 
             // === PRE-CLONE OPERATIONS SUMMARY ===
             const preHooks = getHooksForRepo(repo, 'preClone');
@@ -518,7 +558,7 @@ export function displayDryRunSummary(repos) {
     const reposWithUrls = repos.filter(r => r.url).length;
     const reposWithoutUrls = totalRepos - reposWithUrls;
 
-    log(chalk.bold.white('\n📊 Dry Run Summary:'));
+    log(chalk.bold.white('📊 Dry Run Summary:'));
     log(chalk.gray(`   Total repositories: ${chalk.cyan(totalRepos)}`));
     if (reposWithUrls > 0) {
         log(chalk.gray(`   Repositories to clone: ${chalk.cyan(reposWithUrls)}`));

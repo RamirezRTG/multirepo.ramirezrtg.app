@@ -1,6 +1,6 @@
 {
     "name": "multirepo.ramirezrtg.app",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "description": "A multirepo management tool",
     "license": "MIT",
     "author": "Björn Berg <me@bjoern-berg.com>",
