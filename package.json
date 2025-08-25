@@ -21,7 +21,7 @@
     "dependencies": {
         "js-yaml": "^4.1.0",
         "chalk": "^5.6.0",
-        "inquirer": "^12.9.3"
+        "inquirer": "^12.9.4"
     },
     "engines": {
         "node": ">=18.0.0"
